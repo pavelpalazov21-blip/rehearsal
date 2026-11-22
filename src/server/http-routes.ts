@@ -421,6 +421,19 @@ export function registerStaticRoutes(app: Hono<AppContext>): void {
     await next()
   })
 
+  // Static Git tries loose objects before fetching a pack. An HTML app shell
+  // looks like a corrupt Git object, so the source path needs a real 404.
+  app.all('/release-source/*', async (c) => {
+    if (c.req.method !== 'GET' && c.req.method !== 'HEAD') {
+      return new Response(null, { status: 405, headers: { Allow: 'GET, HEAD' } })
+    }
+    const asset = await c.env.ASSETS.fetch(c.req.raw)
+    if (asset.status === 404 || asset.headers.get('content-type')?.startsWith('text/html')) {
+      return c.notFound()
+    }
+    return asset
+  })
+
   app.get('*', async (c) => {
     const url = new URL(c.req.url)
     const response = await c.env.ASSETS.fetch(c.req.raw)
