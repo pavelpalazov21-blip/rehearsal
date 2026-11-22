@@ -20,7 +20,6 @@ import {
   YjsRoom,
 } from 'deepspace/worker'
 import type { DOBindings, DOManifest, Job, JobContext } from 'deepspace/worker'
-import { AI_CHATS_SCHEMA } from 'deepspace/schema'
 import { registerAgent } from './src/ai/agent.js'
 import { buildTools } from './src/ai/tools.js'
 import { tasks as cronTasks, runTask as runCronTask } from './src/cron.js'
@@ -84,7 +83,6 @@ export class AppJobRoom extends JobRoom<Env> {
 }
 
 export interface Env extends DOBindings<typeof __DO_MANIFEST__> {
-  WORKSPACES: D1Database
   ASSETS: Fetcher
   /**
    * Platform service binding in production; deepspace dev supplies the URL
@@ -144,7 +142,7 @@ registerActionRoutes(app, resolveAuth)
 // Only copilot owns the collections needed for the in-app chat UI.
 registerAgent(app, {
   tools: buildTools,
-  inApp: schemas.some((schema) => schema.name === AI_CHATS_SCHEMA.name),
+  inApp: false,
 })
 registerPlatformProxyRoutes(app)
 registerStaticRoutes(app)

@@ -9,13 +9,16 @@ Rollcall is a release console for one checkout feature. An operator chooses what
 3. In the operator window, enter a release note and click **Publish 25%**. Produce, Pantry and Household appear in the open checkout. Inspect `shopper-001` to see someone who still gets a total-only receipt.
 4. Restore the initial release. The three line items disappear from the shopper’s checkout. The journal shows the publish and restore as separate events.
 
+The **Source code** link in the console opens the shipped revision. You can browse the critical files, download the source, or clone the read-only Git snapshot. Every build generates that snapshot from the committed platform repository.
+
 ## How it works
 
 | Part | What it owns |
 | --- | --- |
 | DeepSpace RecordRoom | Each workspace has a collection of release revisions. A unique revision number prevents two operators’ tabs from winning the same publish. The SDK’s live query sends committed changes to any open consoles or checkouts. |
 | DeepSpace PresenceRoom | The online count shows how many connections are watching the same workspace, including checkout tabs. |
-| DeepSpace-managed D1 | One row maps a workspace to the hash of its operator’s random browser credential. The Worker checks this record on every write. Sharing the URL grants observer access. |
+| DeepSpace collection permissions | A private record maps a workspace to the hash of its operator’s browser credential. Only the Worker can read or create that record. Sharing the URL grants observer access. |
+| DeepSpace agent tools | The read-only `evaluate_checkout` tool lets a developer check a specific customer from the CLI using the same published policy as the browser. |
 | Checkout evaluator | The Worker evaluates the current release for a customer ID. The console calls the same pure assignment function for drafts. |
 
 The assignment function hashes the flag key and customer ID into one of 10,000 buckets. At 25%, buckets 0 through 2,499 get the breakdown. Customer `shopper-002` stays in bucket 1,749 and `shopper-001` stays in 7,562. Increasing a rollout keeps everyone previously included. With a small audience the actual count can differ from the target percentage.
@@ -34,6 +37,15 @@ This is the response after the first 25% publish.
 {"flag":"checkout.price-breakdown","customer":"shopper-002","revision":1,"percent":25,"bucket":1749,"enabled":true}
 ```
 
+The same lookup is available to authorized developers through the DeepSpace CLI. Use the workspace ID from its observer link in the tool input.
+
+```sh
+npx deepspace agent tools rollcall-pavel --json
+npx deepspace agent invoke rollcall-pavel evaluate_checkout --input-file evaluation.json --json
+```
+
+`evaluation.json` contains `{"workspace":"<workspace-id>","customer":"shopper-002"}`.
+
 ## Scope
 
 Each workspace has one operator browser and any number of observers. Other tabs in the same browser profile can operate the workspace. A guest credential lasts 90 days. Clearing it loses write access to that workspace. Named operators and account recovery would be the next changes for a team using this on real releases.
@@ -42,7 +54,7 @@ The inspector shows 100 synthetic IDs and accepts a custom ID. A new workspace s
 
 ## Run locally
 
-Use Node 24 and npm 11.6 or newer. The local Worker uses D1 and Durable Objects through the Cloudflare runtime.
+Use Node 24 and npm 11.6 or newer. The local Worker uses SQLite-backed Durable Objects through the Cloudflare runtime.
 
 ```sh
 npm ci

@@ -74,8 +74,3 @@ bindings = [
 [dev]
 port = 8780
 inspector_port = 9237
-
-[[d1_databases]]
-binding = "WORKSPACES"
-database_name = "rollcall-workspaces"
-database_id = "auto"

@@ -14,36 +14,22 @@ import {
   type StoredRelease,
 } from '../rollout/model'
 const cookie = 'rollcall_operator'
-const initialized = new WeakMap<D1Database, Promise<unknown>>()
-function database(db: D1Database) {
-  let ready = initialized.get(db)
-  if (!ready) {
-    ready = db
-      .prepare(
-        'CREATE TABLE IF NOT EXISTS workspaces (id TEXT PRIMARY KEY, owner_hash TEXT NOT NULL)',
-      )
-      .run()
-      .catch((e) => {
-        initialized.delete(db)
-        throw e
-      })
-    initialized.set(db, ready)
-  }
-  return ready
-}
 async function fingerprint(token: string) {
   const bytes = new Uint8Array(
     await crypto.subtle.digest('SHA-256', new TextEncoder().encode(token)),
   )
   return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('')
 }
-async function roleFor(c: Context<AppContext>, id: string) {
+async function ownerOf(env: Env, id: string): Promise<string | null> {
   if (!isId(id)) return null
-  const owner = await c.env.WORKSPACES.prepare(
-    'SELECT owner_hash FROM workspaces WHERE id=?',
-  )
-    .bind(id)
-    .first<string>('owner_hash')
+  const result = await recordTool<{
+    records: { data: { ownerHash: string } }[]
+  }>(env, id, 'records.query', { collection: 'access', limit: 1 })
+  if (!result.success) throw new Error('Could not read workspace access.')
+  return result.data.records[0]?.data.ownerHash ?? null
+}
+async function roleFor(c: Context<AppContext>, id: string) {
+  const owner = await ownerOf(c.env, id)
   if (!owner) return null
   const token = getCookie(c, cookie)
   return token && isId(token) && (await fingerprint(token)) === owner
@@ -67,7 +53,7 @@ async function recordTool<T>(
     },
     body: JSON.stringify({
       tool,
-      params: { collection: 'releases', ...params },
+      params,
     }),
   })
   return (await res.json()) as { success: boolean; data: T; error?: string }
@@ -82,6 +68,7 @@ async function journal(
   const res = await recordTool<{
     records: { data: StoredRelease; createdAt: string }[]
   }>(env, id, 'records.query', {
+    collection: 'releases',
     orderBy: 'revision',
     orderDir: 'desc',
     limit,
@@ -92,6 +79,15 @@ async function journal(
     ...row.data,
     createdAt: row.createdAt,
   }))
+}
+// Checkout and the CLI tool both read the current committed policy here.
+export async function evaluatePublished(
+  env: Env,
+  id: string,
+  customer: string,
+) {
+  if (!isCustomer(customer) || !(await ownerOf(env, id))) return null
+  return evaluate(customer, (await journal(env, id, 1))[0] ?? baseline)
 }
 export function registerReleases(app: Hono<AppContext>) {
   app.use('/api/rollcall/*', async (c, next) => {
@@ -104,7 +100,6 @@ export function registerReleases(app: Hono<AppContext>) {
       origin !== new URL(c.req.url).origin
     )
       return c.json({ error: 'Use this workspace’s own page.' }, 403)
-    await database(c.env.WORKSPACES)
     await next()
   })
   app.get('/api/rollcall/session', (c) => {
@@ -124,11 +119,13 @@ export function registerReleases(app: Hono<AppContext>) {
     if (!isId(id)) return c.json({ error: 'Invalid workspace ID.' }, 400)
     if (!isId(token))
       return c.json({ error: 'Allow cookies to create a workspace.' }, 401)
-    await c.env.WORKSPACES.prepare(
-      'INSERT OR IGNORE INTO workspaces(id,owner_hash) VALUES(?,?)',
-    )
-      .bind(id, await fingerprint(token))
-      .run()
+    // A unique slot makes simultaneous workspace claims atomic inside its room.
+    const claim = await recordTool(c.env, id, 'records.create', {
+      collection: 'access',
+      data: { slot: 'operator', ownerHash: await fingerprint(token) },
+    })
+    if (!claim.success && !claim.error?.startsWith('Duplicate:'))
+      throw new Error('Could not register workspace.')
     const role = await roleFor(c, id)
     if (role !== 'operator')
       return c.json({ error: 'This workspace is already owned.' }, 409)
@@ -151,11 +148,10 @@ export function registerReleases(app: Hono<AppContext>) {
         },
         400,
       )
-    if (!(await roleFor(c, id)))
-      return c.json({ error: 'Workspace not found.' }, 404)
-    return c.json(
-      evaluate(customer, (await journal(c.env, id, 1))[0] ?? baseline),
-    )
+    const result = await evaluatePublished(c.env, id, customer)
+    return result
+      ? c.json(result)
+      : c.json({ error: 'Workspace not found.' }, 404)
   })
   app.post('/api/rollcall/workspaces/:id/releases', async (c) => {
     const id = c.req.param('id'),
@@ -197,7 +193,10 @@ export function registerReleases(app: Hono<AppContext>) {
     } catch (e) {
       return c.json({ error: (e as Error).message }, 422)
     }
-    const saved = await recordTool(c.env, id, 'records.create', { data: row })
+    const saved = await recordTool(c.env, id, 'records.create', {
+      collection: 'releases',
+      data: row,
+    })
     if (!saved.success) {
       if (saved.error?.startsWith('Duplicate:')) return replayOrConflict()
       throw new Error('Could not append the release.')

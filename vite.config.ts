@@ -12,8 +12,8 @@ const appDir = fileURLToPath(new URL('.', import.meta.url))
 export default defineConfig(({ command, mode }) => ({
   define:
     command === 'serve' && mode === 'rollcall-local'
-      ? { __DEEPSPACE_APP_ID__: JSON.stringify('rollcall-local-test') }
-      : {},
+      ? { __DEEPSPACE_APP_ID__: JSON.stringify('rollcall-local-test'), __ROLLCALL_LOCAL__: 'true' }
+      : { __ROLLCALL_LOCAL__: 'false' },
   plugins: [
     react(),
     generouted(),

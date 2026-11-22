@@ -549,6 +549,11 @@ export function Desk({
             </ol>
           </section>
         </div>
+        {!local && (
+          <footer className="rc-foot">
+            <a href="/source">Source code</a>
+          </footer>
+        )}
       </div>
     </main>
   )

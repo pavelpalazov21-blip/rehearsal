@@ -32,6 +32,8 @@ import type { ExpoAuthBridgeOptions, JwtVerifierConfig, VerifyResult } from 'dee
 import { integrations } from '../integrations.js'
 import type { AppContext, Env } from '../../worker.js'
 
+declare const __ROLLCALL_LOCAL__: boolean
+
 function jwtConfig(env: Env): JwtVerifierConfig {
   return { publicKey: env.AUTH_JWT_PUBLIC_KEY, issuer: env.AUTH_JWT_ISSUER }
 }
@@ -152,7 +154,7 @@ export function registerAuthAndIntegrationRoutes(app: Hono<AppContext>): void {
   // Auth proxy → auth-worker (same-origin cookies).
   app.get('/api/auth/get-session', async (c, next) => {
     const host = new URL(c.req.url).hostname
-    if (!c.env.AUTH_WORKER_URL && (host === '127.0.0.1' || host === 'localhost')) return c.json(null)
+    if (typeof __ROLLCALL_LOCAL__ !== 'undefined' && __ROLLCALL_LOCAL__ && (host === '127.0.0.1' || host === 'localhost')) return c.json(null)
     await next()
   })
   app.all('/api/auth/*', async (c) => {

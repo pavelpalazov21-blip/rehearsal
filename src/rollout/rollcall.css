@@ -730,3 +730,8 @@
   color: var(--muted);
   margin: 13px 0 9px;
 }
+
+.rc-foot {
+  margin-top: 24px;
+  font-size: 0.78rem;
+}
