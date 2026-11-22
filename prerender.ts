@@ -31,7 +31,6 @@ import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { build as viteBuild, type Plugin, type ResolvedConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import { writeReviewSource } from './tools/review-source'
 
 const appDir = fileURLToPath(new URL('.', import.meta.url))
 const ENTRY = 'src/prerender-entry.tsx'
@@ -62,7 +61,7 @@ function siteOrigin(): string {
   return name ? `https://${name}.app.space` : 'http://localhost'
 }
 
-export function prerender(): Plugin {
+export function prerender(afterPages?: (root: string, clientDir: string, origin: string) => void): Plugin {
   let config: ResolvedConfig
   let ran = false
 
@@ -158,7 +157,7 @@ export function prerender(): Plugin {
         writeFileSync(file, page)
       }
 
-      writeReviewSource(config.root, clientDir, origin)
+      afterPages?.(config.root, clientDir, origin)
 
       // 4. Crawler files. robots.txt is the app's own policy (public/), plus
       //    the one line only the build knows.

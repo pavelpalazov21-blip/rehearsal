@@ -6,6 +6,7 @@ import { cloudflare } from '@cloudflare/vite-plugin'
 import checker from 'vite-plugin-checker'
 import { deepspaceBuild } from 'deepspace/build'
 import { prerender } from './prerender.ts'
+import { writeReviewSource } from './tools/review-source.ts'
 
 const appDir = fileURLToPath(new URL('.', import.meta.url))
 
@@ -39,7 +40,7 @@ export default defineConfig(({ command, mode }) => ({
     // the robots.txt Sitemap line from src/seo.ts — so crawlers that do not run
     // JavaScript read real content. See prerender.ts; delete this line for a
     // plain SPA.
-    prerender(),
+    prerender(writeReviewSource),
     // Runs the Rules of Hooks lint (see eslint.config.js) automatically, so
     // there's no separate step to remember: a violation surfaces as an overlay
     // during `deepspace dev start` and fails the build during `deepspace deploy`.
