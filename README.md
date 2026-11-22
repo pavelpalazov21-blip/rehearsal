@@ -22,13 +22,13 @@ The assignment function hashes the flag key and customer ID into one of 10,000 b
 
 Every publish carries the revision the operator saw and a request ID. The winning write takes the next revision. A competing write receives HTTP 409. Repeating the same successful command returns its existing entry. If the server commits and its response goes missing, the browser checks the journal for that exact command. A rollback adds a revision that points back to the chosen policy.
 
-The checkout reads the latest policy from:
+An open checkout reads the latest policy from this endpoint.
 
 ```text
 GET /api/rollcall/workspaces/<workspace-id>/evaluate?customer=shopper-002
 ```
 
-For example, after the first 25% publish it returns:
+This is the response after the first 25% publish.
 
 ```json
 {"flag":"checkout.price-breakdown","customer":"shopper-002","revision":1,"percent":25,"bucket":1749,"enabled":true}
@@ -49,7 +49,7 @@ npm ci
 npm run dev:local
 ```
 
-Open the address printed by Vite. To run the checks:
+Open the address printed by Vite. These commands run the checks.
 
 ```sh
 npx playwright install chromium
@@ -68,13 +68,10 @@ npm run preview:offline -- ../Rollcall-Preview.html
 
 ## Deploy to DeepSpace
 
-If starting from the source archive, extract it, open the project directory and run `git init -b main` once. From a Git checkout, register the app under the intended DeepSpace account, then commit the registered configuration before deploying:
+This project is registered with DeepSpace. An owner or collaborator can clone it with `npx deepspace clone rollcall-pavel`. To deploy a clean, committed checkout, run the following commands from its root.
 
 ```sh
 npx deepspace auth login
-npx deepspace app init
-git add .
-git commit -m "Register Rollcall on DeepSpace"
 npx deepspace deploy
 git remote get-url space
 ```

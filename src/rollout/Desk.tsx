@@ -96,7 +96,7 @@ export function Desk({
   )
   const grid = useRef<HTMLDivElement>(null)
   function edit(fields: Partial<Pick<Draft, 'percent' | 'note'>>) {
-    setDraft({ ...{ percent, base, note }, ...fields })
+    setDraft({ percent, base, note, ...fields })
     setMessage('')
     outstanding.current = null
   }
@@ -110,9 +110,11 @@ export function Desk({
     revision: head.revision,
   })
   const included = sample.filter((s) => s.bucket < percent * 100).length
-  const affected = sample.filter(
-    (s) => s.bucket < percent * 100 !== s.bucket < head.percent * 100,
-  ).length
+  const affected = sample.filter(({ bucket }) => {
+    const getsDraft = bucket < percent * 100
+    const getsPublished = bucket < head.percent * 100
+    return getsDraft !== getsPublished
+  }).length
   const selectedIndex = sample.findIndex((s) => s.customer === customer)
   function moveFocus(e: KeyboardEvent<HTMLButtonElement>, index: number) {
     const cols = grid.current
