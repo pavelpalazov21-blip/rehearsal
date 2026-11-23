@@ -15,6 +15,7 @@ import {
   studioEvidence,
   studioView,
   postStudioMessage,
+  STUDIO_RECEIPT_LIMITS,
 } from './engine.ts'
 import type { StudioState, StudioCommand, StudioActionInput } from './engine.ts'
 const SOLVED: Record<ScenarioId, string> = {
@@ -578,6 +579,67 @@ test('server-owned chat authorship rejects strangers, replay collisions and over
     JSON.stringify(studioView(first.room, 'host-user')),
     /"actorId"/,
   )
+})
+
+
+test('action replay receipts are bounded but accepted retries remain idempotent', async () => {
+  const { room } = await create('checkout')
+  const original = { type: 'start' as const, expectedVersion: 0, requestId: 'action-original-001' }
+  const started = actStudio(room, 'host-user', original, new Date().toISOString()).room
+  const full = structuredClone(started)
+  for (let i = 1; i < STUDIO_RECEIPT_LIMITS.commands; i++) {
+    full.requests[`stored-action-${i}`] = {
+      actor: 'host-user',
+      fingerprint: 'prior-input',
+      version: full.version,
+    }
+  }
+  assert.equal(Object.keys(full.requests).length, STUDIO_RECEIPT_LIMITS.commands)
+  assert.equal(
+    actStudio(full, 'host-user', original, new Date().toISOString()).replayed,
+    true,
+  )
+  blocked(
+    () => actStudio(
+      full, 'host-user',
+      { type: 'inspect', expectedVersion: full.version, requestId: 'new-action-12345' },
+      new Date().toISOString(),
+    ),
+    'INVALID_TRANSITION',
+  )
+  assert.equal(full.version, started.version)
+})
+
+test('chat receipts stay bounded and accepted messages cannot be duplicated', async () => {
+  const { room } = await create('checkout')
+  let current = room
+  for (let i = 0; i < STUDIO_RECEIPT_LIMITS.messages; i++) {
+    const response = postStudioMessage(
+      current, 'host-user',
+      { id: `chat-unique-${i.toString().padStart(5, '0')}`, text: 'Retained replay key' },
+      new Date().toISOString(),
+    )
+    assert.equal(response.replayed, false)
+    current = response.room
+  }
+  assert.equal(Object.keys(current.messageReceipts ?? {}).length, STUDIO_RECEIPT_LIMITS.messages)
+  assert.equal(current.messages.length, 150)
+  const priorVersion = current.version
+  const replay = postStudioMessage(
+    current, 'host-user', { id: 'chat-unique-00000', text: 'Retained replay key' },
+    new Date().toISOString(),
+  )
+  assert.equal(replay.replayed, true)
+  assert.equal(replay.room.version, priorVersion)
+  blocked(
+    () => postStudioMessage(
+      current, 'host-user',
+      { id: 'chat-brand-new-001', text: 'A new message after the activity limit' },
+      new Date().toISOString(),
+    ),
+    'INVALID_TRANSITION',
+  )
+  assert.equal(current.version, priorVersion)
 })
 
 test('team invites expire after 24 hours and cannot be used to enter a solo room', async () => {
