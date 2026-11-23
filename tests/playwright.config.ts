@@ -25,6 +25,7 @@ export default defineConfig({
     cwd: '..',
     url: baseURL,
     timeout: 90000,
+    stdout: process.env.REHEARSAL_TEST_TRACE ? 'pipe' : 'ignore',
     reuseExistingServer: false,
   },
 })

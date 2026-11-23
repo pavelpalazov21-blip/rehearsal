@@ -1,99 +1,41 @@
-# Rollcall
+# Rehearsal
 
-Rollcall is a release console for one checkout feature. An operator chooses what percentage of shoppers get an itemized receipt. Another browser can watch a specific shopper’s checkout change as the operator publishes or rolls back. The basket uses invented prices in Macedonian denars. Its total is always 1,280 MKD.
+Rehearsal gives students and junior engineers a place to practice responding to an outage. Three people share one incident. The engineer investigates and tests a JavaScript repair, the commander reviews it, and Communications writes the customer update. A solo player can perform all three jobs.
 
-## Try the release
+Open the studio from the home page. Choose an incident and either start a solo drill or share one invitation per team role. Try the broken implementation first. Each exercise has eight behavioral cases and six configuration checks. A passing repair becomes eligible for written review. Applying it, checking the applied files and updating customers unlocks the report.
 
-1. Open the app. The published rollout starts at 0%. The operator’s draft starts at 25%. Switch between **Draft receipt** and **Published receipt** for `shopper-002` to compare the proposed and current experience.
-2. Click **Share view** to create a workspace. Open the link in a private window. That browser is a read-only observer. Select **Open live checkout** for `shopper-002` and leave it open.
-3. In the operator window, enter a release note and click **Publish 25%**. Produce, Pantry and Household appear in the open checkout. Inspect `shopper-001` to see someone who still gets a total-only receipt.
-4. Restore the initial release. The three line items disappear from the shopper’s checkout. The journal shows the publish and restore as separate events.
+The seven drills cover checkout saturation, traffic surges, exposed credentials, an AI pricing error, duplicate charges, stale database replicas and an over-broad notification campaign. Evidence, customers, impact and timing are fictional. The code tests and room transitions execute on the server.
 
-The **Source code** link in the console opens the shipped revision. You can browse the critical files, download the source, or clone the read-only Git snapshot. Every build generates that snapshot from the committed platform repository.
+## Architecture
 
-## How it works
-
-| Part | What it owns |
+| Layer | Responsibility |
 | --- | --- |
-| DeepSpace RecordRoom | Each workspace has a collection of release revisions. A unique revision number prevents two operators’ tabs from winning the same publish. The SDK’s live query sends committed changes to any open consoles or checkouts. |
-| DeepSpace PresenceRoom | The online count shows how many connections are watching the same workspace, including checkout tabs. |
-| DeepSpace collection permissions | A private record maps a workspace to the hash of its operator’s browser credential. Only the Worker can read or create that record. Sharing the URL grants observer access. |
-| DeepSpace agent tools | The read-only `evaluate_checkout` tool lets a developer check a specific customer from the CLI using the same published policy as the browser. |
-| Checkout evaluator | The Worker evaluates the current release for a customer ID. The console calls the same pure assignment function for drafts. |
+| React and TypeScript | Public entry, SDK auth gate, diagnostics, editor, review, chat and report |
+| DeepSpace worker actions | Verify the caller, forward a fixed operation to the room, return a role-filtered view |
+| DeepSpace BaseRoom and SQLite | One Durable Object owns a room. A transaction checks role, expected revision and request ID before changing its state |
+| WebSockets | Send a change notification to admitted members after commit. Clients fetch their own view and recover missed updates by fetching again on reconnect |
+| Repair evaluator | Parse a bounded JavaScript subset and test the function on scenario inputs. Validate JSON against the incident rules. Repeat the checks on the applied repair |
+| Coaching | A role-specific authored hint works offline from the AI provider. An optional DeepSpace OpenAI integration, billed to the caller and enabled by the operator, can provide one short hint. It cannot commit a decision |
 
-The assignment function hashes the flag key and customer ID into one of 10,000 buckets. At 25%, buckets 0 through 2,499 get the breakdown. Customer `shopper-002` stays in bucket 1,749 and `shopper-001` stays in 7,562. Increasing a rollout keeps everyone previously included. With a small audience the actual count can differ from the target percentage.
+The original Rollcall app ID, source history and existing room bindings are retained. The new SQLite class has its own additive migration. The original console remains accessible at /rollcall and existing workspace links continue to open the corresponding workspace.
 
-Every publish carries the revision the operator saw and a request ID. The winning write takes the next revision. A competing write receives HTTP 409. Repeating the same successful command returns its existing entry. If the server commits and its response goes missing, the browser checks the journal for that exact command. A rollback adds a revision that points back to the chosen policy.
+## Development and checks
 
-An open checkout reads the latest policy from this endpoint.
-
-```text
-GET /api/rollcall/workspaces/<workspace-id>/evaluate?customer=shopper-002
-```
-
-This is the response after the first 25% publish.
-
-```json
-{"flag":"checkout.price-breakdown","customer":"shopper-002","revision":1,"percent":25,"bucket":1749,"enabled":true}
-```
-
-The same lookup is available to authorized developers through the DeepSpace CLI. Use the workspace ID from its observer link in the tool input.
+Use Node 24 and install the locked dependencies with npm ci. Sign in with the existing app's DeepSpace owner or collaborator account for platform commands.
 
 ```sh
-npx deepspace agent tools rollcall-pavel --json
-npx deepspace agent invoke rollcall-pavel evaluate_checkout --input-file evaluation.json --json
+npm run dev
+npm run type-check
+npm run test:unit
+npm run build
+node tools/test-built.mjs
+npx deepspace test run all
 ```
 
-`evaluation.json` contains `{"workspace":"<workspace-id>","customer":"shopper-002"}`.
+The isolated browser suite runs the production build locally under workerd with a temporary signing key, test identity provider, isolated SQLite state and independent browsers. Set ROLLCALL_CHROMIUM to use a system Chromium executable. The official account fixture uses the same Studio acceptance assertions with platform test accounts when the isolated runner is absent. The SDK suite requires owner authentication and three provisioned test identities.
 
-## Scope
+The source page at /rehearsal-source/ is generated during the build from the Git commit. Review and commit first so its source matches the release. It includes a static, read-only Git endpoint. Deployment and evidence are tracked in docs/release-review.md.
 
-Each workspace has one operator browser and any number of observers. Other tabs in the same browser profile can operate the workspace. A guest credential lasts 90 days. Clearing it loses write access to that workspace. Named operators and account recovery would be the next changes for a team using this on real releases.
+## Limits
 
-The inspector shows 100 synthetic IDs and accepts a custom ID. A new workspace starts with an empty journal. The console displays the latest 50 changes plus the initial policy. A release changes only the demonstration checkout.
-
-## Run locally
-
-Use Node 24 and npm 11.6 or newer. The local Worker uses SQLite-backed Durable Objects through the Cloudflare runtime.
-
-```sh
-npm ci
-npm run dev:local
-```
-
-Open the address printed by Vite. These commands run the checks.
-
-```sh
-npx playwright install chromium
-npm run validate
-npm run lint
-npm run test:browser
-```
-
-The unit tests cover fixed buckets, expanding audiences, input validation and revision logic. The browser and API tests cover an observer watching a checkout, competing publishes, a stale operator tab, retries after a lost response, and persistence after refresh.
-
-The optional single-file preview runs the same console and receipt locally. It saves releases in browser storage when available.
-
-```sh
-npm run preview:offline -- ../Rollcall-Preview.html
-```
-
-## Deploy to DeepSpace
-
-This project is registered with DeepSpace. An owner or collaborator can clone it with `npx deepspace clone rollcall-pavel`. To deploy a clean, committed checkout, run the following commands from its root.
-
-```sh
-npx deepspace auth login
-npx deepspace deploy
-git remote get-url space
-```
-
-The deploy prints the app URL. The `space` remote identifies the hosted source repository.
-
-## Code to read
-
-- `src/rollout/model.ts` defines assignment, command validation and revision construction.
-- `src/server/releases.ts` handles workspace ownership, publishing and checkout evaluation.
-- `src/schemas.ts` defines the release collection and its unique revision constraint.
-- `src/rollout/Wire.tsx` subscribes each open client to release updates and presence.
-- `tests/collab.spec.ts` exercises multiple browsers. `tests/api.spec.ts` runs two publish requests concurrently.
+The editor supports expressions, comparisons, conditionals, local constants and a small set of operations. A passing result proves the authored tests. Recovery metrics and the score model practice decisions. A seat remains assigned when a person disconnects. Independent sign-in, hosted AI and production behavior each require their own platform checks.

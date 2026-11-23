@@ -27,6 +27,7 @@
     "screenshot": "deepspace test screenshot",
     "type-check": "tsc --noEmit",
     "lint": "eslint .",
+    "test:built": "node tools/test-built.mjs",
     "test:browser": "playwright test --config tests/playwright.config.ts",
     "dev:local": "vite --mode rollcall-local",
     "preview:offline": "node tools/build-preview.mjs"
