@@ -1,5 +1,36 @@
-# Rehearsal release review
+# Rehearsal — current release review
 
+**Current status (November 23, 2026): Rehearsal release 6 was reported deployed.** The original Rollcall app ID and history were retained, and the old console was retired. The previous notes below document the **predeployment candidate** and should not be interpreted as present-day blockers.
+
+| Field | Recorded value |
+| --- | --- |
+| Original application | `rollcall-pavel` (`app_01M80KTYBTN7RBB8BD54CQAST3`) |
+| Deployed candidate | Release 6, commit `6af91a66f3062a1be6db82de885bd2f5af58c4cc` |
+| Live app | https://rollcall-pavel.app.space/ |
+| Read-only source | https://rollcall-pavel.app.space/rehearsal-source/ |
+| Git clone endpoint | `https://rollcall-pavel.app.space/release-source/git` |
+
+### Reported release-6 evidence
+
+- DeepSpace SDK 0.44.2: **33 unit tests + 14 browser checks passed**, with a successful three-identity incident through debrief.
+- A separate production-build suite reportedly passed 14 browser tests; 82 earlier portable tests also passed.
+- Both source-page URL forms reportedly returned HTTP 200 for anonymous browsing, and archive/clone content was matched against the released Git commit.
+- A 90-second, 1080p/24fps, silent H.264 walkthrough with 19 English subtitle cues was exported from an edited three-account run.
+- The latest browser testing was in Chromium. Physical iOS/Android, Safari, assistive-technology and sustained-load tests were not claimed.
+
+These outcomes were recorded by **Codex in the authenticated environment**; this repository file is not itself a new independent production execution. Every new change must be tested again. In particular, changes proposed on GitHub are **not automatically reflected in the live DeepSpace release**; align the source records when deploying.
+
+### Remaining boundaries
+
+- Incident metrics and customer communications are fictional, and a passing authored test suite does not prove the repair works for all possible inputs.
+- The bounded interpreter does not accept general-purpose JavaScript; the optional paid AI provider was not enabled.
+- Room replay records should be bounded, but an application-level quota for creating rooms per account is not yet established; add platform abuse controls before broader public use.
+- A previously executed limited secret scan is not a substitute for a full source/history security audit.
+- The candidate's personal walkthrough and final application submission remain their responsibility.
+
+## Historical predeployment notes (preserved for traceability)
+
+---
 ## What would change on Rollcall
 
 The public home page would introduce Rehearsal. The studio would open at /rehearsal-studio. The original console would move to /rollcall, and existing workspace links would keep opening their workspace. The release would add one SQLite Durable Object class, RehearsalStudioRoom, in migration v2-rehearsal-studio. Existing bindings remain in place. No backfill or deletion is required.
