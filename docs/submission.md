@@ -24,3 +24,11 @@ Before the clock starts, sign three browser profiles in and join one team pricin
 | 48–64s | In the commander window inspect the before/after diff. Write why an unapproved change must fail, record the review, then approve. |
 | 64–78s | Apply and verify from the engineer window. Publish a short factual customer update from Communications. Show the other screens updating. |
 | 78–90s | Close the incident. Point to the recovery explanation and open the read-only source. “The room runs the tests again on the applied files. Each browser only sees the information its role needs.” |
+
+## Engineering tradeoff and SDK feedback
+
+I chose to keep decisions in one room. It gives the commander a clear answer if two people act on the same version. The cost is that someone with a stale view has to read the latest evidence and try again. The repair editor also deliberately supports a limited part of JavaScript. That lets the server test submitted functions without executing arbitrary programs.
+
+DeepSpace’s three-account browser fixture made it possible to check what each role can actually see. One part of the SDK experience I would improve is the test setup for apps that generate assets during the build. The first official run started a development server and missed the generated source page. Running the suite against the built worker caught the difference before release.
+
+I directed the choice to keep the original Rollcall project, make the repairs executable and require a three-person acceptance test. Codex implemented and ran the automated checks. My own demonstration is a separate step.

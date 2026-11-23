@@ -30,3 +30,9 @@ The public DeepSpace Careers page describes an application and a live working se
 ## Release procedure
 
 Review the tested changes with Pavel before replacing the public release. Recheck the current release and source tip immediately before deploying. Use the SDK deployment for the existing app with its stale-release protection enabled. Open the public URL in a fresh browser, verify three hosted identities, repeat the team workflow and compare the anonymous source clone's HEAD with the deployed revision. An application rollback uses the platform's immutable release history. Retain the new studio storage when rolling back.
+
+## Candidate invitation
+
+Pavel’s previously supplied invitation asks for a focused full-stack DeepSpace application, a live URL, a source repository and a short write-up within the five-day exercise. It asks the applicant to explain integrations, tradeoffs, agent assistance, independent verification and unfinished work. The quoted deadline is Thursday, November 26, 2026 at 10:59 p.m. Minneapolis time (11:59 p.m. Eastern). This record uses the previously supplied invitation and the public listing. The private portal has not been reopened.
+
+The working branch, tests, architecture, tradeoffs, SDK feedback, limitations and disclosure are ready for review. A live release and anonymous source link depend on publication. Personal verification belongs to the applicant. The ninety-second script gives Pavel a concrete run to perform before describing it in the first person.
