@@ -4,7 +4,7 @@ test('an observer and a live checkout follow changes without reloading', async (
   browser,
   baseURL,
 }) => {
-  await page.goto('/')
+  await page.goto('/rollcall')
   await page.getByRole('button', { name: 'Publish 25%' }).click()
   await expect(page.getByText('Published 25% as revision 1.')).toBeVisible()
   const guest = await browser.newContext({ baseURL })
@@ -33,7 +33,7 @@ test('an older operator draft needs an explicit rebase', async ({
   page,
   context,
 }) => {
-  await page.goto('/')
+  await page.goto('/rollcall')
   await page.getByRole('button', { name: 'Publish 25%' }).click()
   await expect(page.getByText('Published 25% as revision 1.')).toBeVisible()
   const other = await context.newPage()

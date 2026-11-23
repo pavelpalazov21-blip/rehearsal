@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test'
 test('a draft changes the test receipt; publishing and restoring survive refresh', async ({
   page,
 }) => {
-  await page.goto('/')
+  await page.goto('/rollcall')
   await expect(
     page.getByRole('heading', { name: 'Price breakdown' }),
   ).toBeVisible()
@@ -25,7 +25,7 @@ test('a draft changes the test receipt; publishing and restoring survive refresh
 test('the console finds a committed release when its HTTP response is lost', async ({
   page,
 }) => {
-  await page.goto('/')
+  await page.goto('/rollcall')
   await page.route(
     '**/api/rollcall/workspaces/*/releases',
     async (route) => {

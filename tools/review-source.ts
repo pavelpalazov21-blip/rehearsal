@@ -61,8 +61,8 @@ export function writeReviewSource(
     git(
       'archive',
       '--format=zip',
-      '--prefix=Rollcall/',
-      '--output=' + join(output, 'rollcall.zip'),
+      '--prefix=Rehearsal/',
+      '--output=' + join(output, 'rehearsal.zip'),
       commit,
     )
   } finally {
@@ -70,14 +70,13 @@ export function writeReviewSource(
   }
 
   const files = [
-    ['Rollout assignment', 'src/rollout/model.ts'],
-    ['Publish and restore', 'src/server/releases.ts'],
-    ['Permissions', 'src/schemas.ts'],
-    ['Live updates', 'src/rollout/Wire.tsx'],
-    ['CLI evaluator', 'src/ai/tools.ts'],
-    ['Two-browser tests', 'tests/collab.spec.ts'],
-    ['Concurrent publishes', 'tests/api.spec.ts'],
-    ['Run the project', 'README.md'],
+    ['Room state and permissions', 'src/rehearsal/studio/engine.ts'],
+    ['JavaScript evaluator', 'src/rehearsal/studio/repair.ts'],
+    ['Seven incident definitions', 'src/rehearsal/studio/scenarios.ts'],
+    ['SQLite room and notifications', 'src/rehearsal/studio-room.ts'],
+    ['Authenticated actions and coach', 'src/rehearsal/studio-actions.ts'],
+    ['Three-role browser acceptance', 'tests/studio-collab.spec.ts'],
+    ['Project overview', 'README.md'],
   ]
   const listings = files
     .map(
@@ -86,8 +85,10 @@ export function writeReviewSource(
     )
     .join('')
   const cloneUrl = html(origin) + '/release-source/git'
-  const page = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Rollcall · Source code</title>
+  const page = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Rehearsal · Source code</title>
 <style>*{box-sizing:border-box}body{margin:0;background:#f6f6f8;color:#232335;font:16px/1.5 Inter,Arial,sans-serif}nav{background:#212032;color:#fff}nav div,main{max-width:930px;margin:auto;padding:17px max(20px,4vw)}nav div{font-size:20px;font-weight:700}main{padding-block:34px 70px}h1{font-size:clamp(2.4rem,7vw,3.8rem);line-height:1.06;letter-spacing:-.065em;margin:14px 0}h2{font-size:1.1rem;margin-top:29px}a{color:#4936ab;text-underline-offset:3px}p{margin:10px 0;color:#55556c}code{font: .88em/1.5 ui-monospace,monospace}pre{background:#252536;color:#f5f3ff;padding:12px;border-radius:5px;overflow:auto}details{background:white;border:1px solid #dcdde5;border-radius:6px;margin:7px 0;padding:11px 15px;min-width:0}summary{cursor:pointer;font-weight:650;overflow-wrap:anywhere}summary span{color:#666777;font: .78em ui-monospace,monospace;margin-left:8px}.download{display:inline-block;background:#4936ab;color:white;font-weight:650;text-decoration:none;border-radius:5px;padding:8px 14px;margin:6px 0}</style>
-</head><body><nav><div>Rollcall</div></nav><main><a href="/">Open release console</a><h1>Source code</h1><p>Code for revision <code>${html(commit.slice(0, 12))}</code> of the deployed app.</p><a class="download" href="/release-source/rollcall.zip" download>Download source ZIP</a><h2>Clone the read-only repository</h2><pre><code>git clone ${cloneUrl} rollcall</code></pre><h2>Browse the code</h2>${listings}</main></body></html>`
+</head><body><nav><div>Rehearsal</div></nav><main><a href="/">Open Rehearsal</a><h1>Source code</h1><p>Code for revision <code>${html(commit.slice(0, 12))}</code> of Rehearsal.</p><a class="download" href="/release-source/rehearsal.zip" download>Download source ZIP</a><h2>Clone the read-only repository</h2><pre><code>git clone ${cloneUrl} rehearsal</code></pre><h2>Browse the code</h2>${listings}</main></body></html>`
+  mkdirSync(join(clientDir, 'rehearsal-source'), { recursive: true })
+  writeFileSync(join(clientDir, 'rehearsal-source/index.html'), page)
   writeFileSync(join(clientDir, 'source.html'), page)
 }

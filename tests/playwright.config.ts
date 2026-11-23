@@ -19,9 +19,9 @@ export default defineConfig({
       : chromiumLaunchOptions(),
   },
   webServer: {
-    command:
-      'npx vite --mode rollcall-local --host 127.0.0.1 --strictPort --port ' +
-      port,
+    command: process.env.REHEARSAL_TEST_BUILD
+      ? 'node tests/support/serve-built.mjs ' + port
+      : 'npx vite --host 127.0.0.1 --strictPort --port ' + port,
     cwd: '..',
     url: baseURL,
     timeout: 90000,

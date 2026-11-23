@@ -121,6 +121,21 @@ async function resolveDocsYjsRole(
 }
 
 export function registerRealtimeRoutes(app: Hono<AppContext>): void {
+  app.get('/ws/studio/:roomId', async (c) => {
+    const id = c.req.param('roomId')
+    if (!/^rh-[0-9a-f]{32}$/.test(id)) return c.notFound()
+    if (c.req.header('Upgrade')?.toLowerCase() !== 'websocket') return c.text('WebSocket required', 400)
+    const token = c.req.query('token') || ''
+    const { result } = await verifyJwt(jwtConfig(c.env), token)
+    if (!result || result.userId.startsWith('anon-')) return c.text('Sign in required', 401)
+    const room = c.env.REHEARSAL_STUDIO_ROOMS.get(c.env.REHEARSAL_STUDIO_ROOMS.idFromName(id))
+    const access = await room.fetch('https://studio.internal/snapshot', {
+      headers: { authorization: 'Bearer ' + token, 'X-Rehearsal-Room': id }
+    })
+    if (!access.ok) return new Response(null, { status: access.status })
+    return room.fetch(authenticatedRoomRequest(c.req.raw, result))
+  })
+
   app.get(
     '/ws/:roomId',
     wsRoute((env) => env.RECORD_ROOMS),

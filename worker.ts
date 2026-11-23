@@ -34,8 +34,11 @@ import {
 } from './src/server/http-routes.js'
 import { registerRealtimeRoutes } from './src/server/realtime-routes.js'
 
+export { RehearsalStudioRoom } from './src/rehearsal/studio-room'
+
 // Dynamic deploy reads this manifest to create the app's DO bindings.
 export const __DO_MANIFEST__ = [
+  { binding: 'REHEARSAL_STUDIO_ROOMS', className: 'RehearsalStudioRoom', sqlite: true },
   { binding: 'RECORD_ROOMS', className: 'AppRecordRoom', sqlite: true },
   { binding: 'YJS_ROOMS', className: 'AppYjsRoom', sqlite: true },
   { binding: 'CANVAS_ROOMS', className: 'AppCanvasRoom', sqlite: true },
@@ -83,6 +86,7 @@ export class AppJobRoom extends JobRoom<Env> {
 }
 
 export interface Env extends DOBindings<typeof __DO_MANIFEST__> {
+  REHEARSAL_AI_COACH?: string
   ASSETS: Fetcher
   /**
    * Platform service binding in production; deepspace dev supplies the URL

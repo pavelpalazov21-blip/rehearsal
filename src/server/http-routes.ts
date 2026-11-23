@@ -106,7 +106,7 @@ export function registerAuthAndIntegrationRoutes(app: Hono<AppContext>): void {
     // Land the signed-in user in the app, not on the static landing. `/` is a
     // static page (no auth/realtime providers), so redirecting there after auth
     // would strand the user; `/home` is the dynamic app boundary.
-    const appHome = `${appOrigin}/home`
+    const appHome = `${appOrigin}/rehearsal-studio`
 
     if (!code) return c.redirect(appHome)
 

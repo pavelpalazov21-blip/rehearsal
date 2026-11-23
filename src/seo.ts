@@ -23,9 +23,9 @@
 declare const __DEEPSPACE_SITE_ORIGIN__: string | undefined
 
 export const seo = {
-  title: 'Rollcall | Feature release console',
+  title: 'Rehearsal | Multiplayer incident studio',
   description:
-    'Preview a feature rollout, inspect customer assignments and restore a published version.',
+    'Investigate a software incident with your team, repair JavaScript, run tests and review the recovery.',
   /** Public origin for canonical URLs, og:url, and the sitemap — no trailing
    *  slash. Replace with the custom domain once one is attached, e.g.
    *  'https://www.example.com'. */
