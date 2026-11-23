@@ -17,7 +17,7 @@ The seven drills cover checkout saturation, traffic surges, exposed credentials,
 | Repair evaluator | Parse a bounded JavaScript subset and test the function on scenario inputs. Validate JSON against the incident rules. Repeat the checks on the applied repair |
 | Coaching | A role-specific authored hint works offline from the AI provider. An optional DeepSpace OpenAI integration, billed to the caller and enabled by the operator, can provide one short hint. It cannot commit a decision |
 
-The original Rollcall app ID, source history and existing room bindings are retained. The new SQLite class has its own additive migration. The original console remains accessible at /rollcall and existing workspace links continue to open the corresponding workspace.
+The original Rollcall app ID, source history and existing room bindings are retained. The new SQLite class has its own additive migration. Former console bookmarks lead to Rehearsal. The old checkout interface and release endpoints have been retired. Existing storage and migrations are preserved.
 
 ## Development and checks
 

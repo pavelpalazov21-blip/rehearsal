@@ -5,7 +5,6 @@
  * here: specific API and WebSocket handlers must precede the SPA fallback.
  */
 
-import { registerReleases } from './src/server/releases.js'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import {
@@ -139,7 +138,6 @@ app.use('*', async (c, next) => {
 // Registration order is part of the worker contract. The wildcard auth route
 // follows its special cases, AI precedes platform proxies, and static is last.
 registerAuthAndIntegrationRoutes(app)
-registerReleases(app)
 registerRealtimeRoutes(app)
 registerActionRoutes(app, resolveAuth)
 // Every scaffold exposes selected tools through HTTP, MCP and browser tools.

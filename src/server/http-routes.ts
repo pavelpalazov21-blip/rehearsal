@@ -434,6 +434,8 @@ export function registerStaticRoutes(app: Hono<AppContext>): void {
     return asset
   })
 
+  app.get('/rollcall', (c) => c.redirect('/', 308))
+  app.get('/rollcall/', (c) => c.redirect('/', 308))
   app.get('*', async (c) => {
     const url = new URL(c.req.url)
     const response = await c.env.ASSETS.fetch(c.req.raw)

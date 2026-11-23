@@ -1,11 +1,7 @@
-import { useSearchParams } from 'react-router-dom'
 import { Seo } from '../components/Seo'
 import { seo } from '../seo'
-import { LiveApp } from '../rollout/LiveApp'
 import '../rehearsal/studio-theme.css'
 export default function Landing() {
-  const [params] = useSearchParams()
-  if (params.has('space')) return <LiveApp />
   return (
     <main className="rh-app rh-landing">
       <Seo {...seo} path="/" />
@@ -17,7 +13,7 @@ export default function Landing() {
           <em>Can your team fix it?</em>
         </h1>
         <p>
-          Practice a software outage with two teammates or on your own.
+          Rehearsal is a multiplayer software incident simulator. Play solo or with two teammates.
           Investigate logs, repair JavaScript, and prove the fix works before
           the commander approves it.
         </p>

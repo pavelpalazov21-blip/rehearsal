@@ -229,6 +229,7 @@ test('three signed-in users collaborate, preserve private evidence and verify re
 
   await engineer.page.getByTestId('studio-action-apply').click()
   await engineer.page.getByTestId('studio-action-verify').click()
+  await expect(communications.page.getByText('6 of 7 checkpoints', { exact: true })).toBeVisible({ timeout: 30_000 })
   await communications.page
     .getByLabel('Customer update', { exact: true })
     .fill('Price changes are paused while we verify the last approved values.')

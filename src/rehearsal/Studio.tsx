@@ -670,7 +670,7 @@ export default function RehearsalStudioPage() {
         {
           type: 'verify' as StudioCommand,
           label: 'Verify recovery',
-          description: 'Run simulated post-fix checks',
+          description: 'Rerun the checks on the applied files',
         },
         {
           type: 'communicate' as StudioCommand,
@@ -680,7 +680,7 @@ export default function RehearsalStudioPage() {
         {
           type: 'finish' as StudioCommand,
           label: 'Complete and debrief',
-          description: 'Get a reproducible outcome score',
+          description: 'Read the recovery explanation and team score',
         },
       ].filter((a) => available(room, a.type))
     : []
@@ -1701,6 +1701,7 @@ export default function RehearsalStudioPage() {
                         <strong>Recovery check</strong>{' '}
                         {room.debrief.verification}
                       </p>
+                      <p><strong>For the next drill</strong>{' '}{room.debrief.risks ? 'Contain the impact before taking a risky action.' : 'Name a failing input in your handoff so teammates can reproduce the original bug.'}</p>
                       <div className="rh-debrief-meta">
                         {room.debrief.events} audit events <span>·</span>{' '}
                         {room.debrief.risks} risky interventions <span>·</span>{' '}
