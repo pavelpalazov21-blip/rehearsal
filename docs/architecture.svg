@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="350" viewBox="0 0 1120 350" role="img" aria-label="Rehearsal architecture: three signed-in role-specific browsers send authenticated DeepSpace actions to one SQLite-backed authoritative incident room; server tests code repairs and notifies browsers after commits.">
+<rect width="1120" height="350" rx="15" fill="#101816"/>
+<text x="34" y="42" font-family="Arial,sans-serif" font-size="25" font-weight="bold" fill="#d2f59a">Rehearsal — one incident, one authoritative room</text>
+<g font-family="Arial,sans-serif" text-anchor="middle">
+<rect x="30" y="78" width="258" height="189" rx="12" fill="#1b2924" stroke="#779d76" stroke-width="2"/>
+<text x="159" y="113" fill="#d2f59a" font-size="20" font-weight="bold">Three browser clients</text>
+<text x="159" y="149" fill="#ebf1eb" font-size="17">Commander</text>
+<text x="159" y="181" fill="#ebf1eb" font-size="17">Engineer</text>
+<text x="159" y="213" fill="#ebf1eb" font-size="17">Communications</text>
+<text x="159" y="247" fill="#b8c6b9" font-size="14">Role-filtered snapshots</text>
+<rect x="368" y="93" width="305" height="161" rx="12" fill="#1b2924" stroke="#779d76" stroke-width="2"/>
+<text x="520" y="133" fill="#d2f59a" font-size="20" font-weight="bold">DeepSpace worker</text>
+<text x="520" y="167" fill="#ebf1eb" font-size="17">Signed-in user identity</text>
+<text x="520" y="198" fill="#ebf1eb" font-size="17">Fixed action dispatch</text>
+<text x="520" y="230" fill="#b8c6b9" font-size="14">Server-side authorization</text>
+<rect x="755" y="78" width="335" height="189" rx="12" fill="#1b2924" stroke="#779d76" stroke-width="2"/>
+<text x="923" y="113" fill="#d2f59a" font-size="20" font-weight="bold">SQLite-backed BaseRoom</text>
+<text x="923" y="149" fill="#ebf1eb" font-size="17">Revisions and replay IDs</text>
+<text x="923" y="181" fill="#ebf1eb" font-size="17">Repair and policy tests</text>
+<text x="923" y="213" fill="#ebf1eb" font-size="17">Transactional state</text>
+<text x="923" y="247" fill="#b8c6b9" font-size="14">Commit before notification</text>
+<path d="M288 163 H355 M673 163 H741" stroke="#c3f19a" stroke-width="4"/>
+<path d="M342 151 L356 163 L342 175 M728 151 L742 163 L728 175" fill="none" stroke="#c3f19a" stroke-width="3"/>
+<path d="M923 276 V307 H159 V276" fill="none" stroke="#86cce8" stroke-width="3" stroke-dasharray="9 8"/>
+<text x="541" y="329" fill="#bcdef4" font-size="15">WebSocket notification — then fetch a fresh snapshot</text>
+</g></svg>
