@@ -1,41 +1,70 @@
 # Rehearsal
 
-Rehearsal gives students and junior engineers a place to practice responding to an outage. Three people share one incident. The engineer investigates and tests a JavaScript repair, the commander reviews it, and Communications writes the customer update. A solo player can perform all three jobs.
+**Don't just suggest the fix. Prove it works.**
 
-Open the studio from the home page. Choose an incident and either start a solo drill or share one invitation per team role. Try the broken implementation first. Each exercise has eight behavioral cases and six configuration checks. A passing repair becomes eligible for written review. Applying it, checking the applied files and updating customers unlocks the report.
+[**Launch the live app**](https://rollcall-pavel.app.space/) · [**Start a drill**](https://rollcall-pavel.app.space/rehearsal-studio) · [**Browse released code**](https://rollcall-pavel.app.space/rehearsal-source/) · [**Demo walkthrough**](docs/demo.md)
 
-The seven drills cover checkout saturation, traffic surges, exposed credentials, an AI pricing error, duplicate charges, stale database replicas and an over-broad notification campaign. Evidence, customers, impact and timing are fictional. The code tests and room transitions execute on the server.
+Rehearsal is a multiplayer incident-response simulator. Three signed-in teammates investigate a **fictional** software failure, edit and test a real JavaScript repair, review the exact change, and verify recovery before a customer update. A solo mode lets you learn the same workflow without teammates.
+
+> An AI assistant can suggest a patch. Rehearsal trains the part that follows: what input proves the old function was wrong, who reviewed the fix, and what did the team actually verify?
+
+## See it in under five minutes
+
+1. Sign in, open the [incident studio](https://rollcall-pavel.app.space/rehearsal-studio), and choose **Runaway AI pricing agent**.
+2. Start **Solo** for a quick trial, or create a **Team** room and privately invite an Engineer and Communications teammate.
+3. Inspect simulated logs. Try the starter JavaScript and show that an unapproved price change is accepted.
+4. Repair the function and JSON guardrails. Run **8 behavioral cases** and **6 configuration checks**.
+5. Submit, document the commander's review, approve, apply, reverify, publish the simulated customer update, and read the debrief.
+
+See the [90-second demo script and exact verification steps](docs/demo.md). The silent subtitled MP4 is provided with the internship submission rather than hosted in this repository.
 
 ## Architecture
 
-| Layer | Responsibility |
+![Rehearsal architecture diagram: three authenticated users, DeepSpace worker actions and an authoritative SQLite-backed room](docs/architecture.svg)
+
+| Layer | What it guarantees |
 | --- | --- |
-| React and TypeScript | Public entry, SDK auth gate, diagnostics, editor, review, chat and report |
-| DeepSpace worker actions | Verify the caller, forward a fixed operation to the room, return a role-filtered view |
-| DeepSpace BaseRoom and SQLite | One Durable Object owns a room. A transaction checks role, expected revision and request ID before changing its state |
-| WebSockets | Send a change notification to admitted members after commit. Clients fetch their own view and recover missed updates by fetching again on reconnect |
-| Repair evaluator | Parse a bounded JavaScript subset and test the function on scenario inputs. Validate JSON against the incident rules. Repeat the checks on the applied repair |
-| Coaching | A role-specific authored hint works offline from the AI provider. An optional DeepSpace OpenAI integration, billed to the caller and enabled by the operator, can provide one short hint. It cannot commit a decision |
+| React + TypeScript | Role-specific interface for evidence, editor, guardrails, review, chat and debrief |
+| DeepSpace authentication + worker actions | Server verifies the caller and forwards only fixed room operations |
+| DeepSpace BaseRoom + SQLite | One Durable Object owns an incident's authoritative state |
+| Revision checks + request IDs | Stale decisions are rejected and retries do not repeat an accepted action |
+| WebSockets + snapshots | Notify after commit; reconnecting browsers retrieve a fresh role-filtered view |
+| Restricted JavaScript interpreter | Test authored repairs on the server without arbitrary JavaScript execution |
 
-The original Rollcall app ID, source history and existing room bindings are retained. The new SQLite class has its own additive migration. Former console bookmarks lead to Rehearsal. The old checkout interface and release endpoints have been retired. Existing storage and migrations are preserved.
+Key files: [room authority](src/rehearsal/studio-room.ts), [state machine](src/rehearsal/studio/engine.ts), [repair evaluator](src/rehearsal/studio/repair.ts), [authenticated collaboration tests](tests/studio-collab.spec.ts).
 
-## Development and checks
+## Seven incident drills
 
-Use Node 24 and install the locked dependencies with npm ci. Sign in with the existing app's DeepSpace owner or collaborator account for platform commands.
+Checkout saturation · Traffic surge · Exposed credentials · Runaway AI pricing · Duplicate charges · Stale database replicas · Over-broad notification campaign.
 
-```sh
-npm run dev
+All outages, customer data, impact figures and recovery scores are simulated. No real infrastructure is modified.
+
+## Run it locally
+
+Use **Node 24** and npm. DeepSpace-specific tests and local app development also require the relevant signed-in SDK environment.
+
+```bash
+npm ci
 npm run type-check
 npm run test:unit
 npm run build
-node tools/test-built.mjs
-npx deepspace test run all
 ```
 
-The isolated browser suite runs the production build locally under workerd with a temporary signing key, test identity provider, isolated SQLite state and independent browsers. Set ROLLCALL_CHROMIUM to use a system Chromium executable. The official account fixture uses the same Studio acceptance assertions with platform test accounts when the isolated runner is absent. The SDK suite requires owner authentication and three provisioned test identities. In proxy-only environments, set REHEARSAL_TEST_PROXY_AUTH=1 and NODE_USE_ENV_PROXY=1 for the authenticated test run. After deployment, REHEARSAL_TEST_LIVE=1 npm run test:browser runs the six Studio cases against the public app with the platform accounts.
+```bash
+npm run dev                     # DeepSpace local development
+npx deepspace test run all      # official platform suite, requires auth
+```
 
-The source page at /rehearsal-source/ is generated during the build from the Git commit. Review and commit first so its source matches the release. It includes a static, read-only Git endpoint. Deployment and evidence are tracked in docs/release-review.md.
+GitHub Actions runs the type-check, unit test and production-build checks for pull requests. Those checks do **not** replace the authenticated multi-account platform test.
 
-## Limits
+## Evidence and limitations
 
-The editor supports expressions, comparisons, conditionals, local constants and a small set of operations. A passing result proves the authored tests. Recovery metrics and the score model practice decisions. A seat remains assigned when a person disconnects. Independent sign-in, hosted AI and production behavior each require their own platform checks.
+The [release-review record](docs/release-review.md) distinguishes the **reported** DeepSpace release-6 test results from tests any reviewer can reproduce. The published release was reported at commit `6af91a66f3062a1be6db82de885bd2f5af58c4cc`; later GitHub-only changes are **not automatically deployed**. Reverify the source commit after any deployment.
+
+The editor supports a bounded subset of JavaScript, not arbitrary programs. Eight passing cases demonstrate the exercise's specified behavior, not proof for every input. Server-side replay ledgers have explicit per-room activity budgets; account-level room-creation quotas remain future platform hardening. The default coach provides authored hints, and the optional paid AI integration was not enabled in the recorded release. Screen-reader testing, physical devices, Safari and load tests were not independently verified.
+
+## Contribution and AI assistance
+
+I chose the incident-response concept, directed the three-role workflow and product requirements, and insisted on real code repairs, test evidence, and using the original DeepSpace project. **Codex contributed extensively** to implementation, debugging, automated tests, deployment work and the video. Commit history retains actual attribution. I can explain the design decisions and outstanding limitations in a live technical discussion.
+
+[Submission write-up](docs/submission.md) · [Release review](docs/release-review.md) · [Demo guide](docs/demo.md)
