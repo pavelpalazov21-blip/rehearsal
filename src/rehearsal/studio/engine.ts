@@ -162,6 +162,9 @@ export interface StudioView {
   }
 }
 const ROLES: StudioRole[] = ['commander', 'engineer', 'comms']
+// Keep all accepted replay keys rather than silently expiring deduplication.
+// Each simulated incident has a deliberate activity budget.
+export const STUDIO_RECEIPT_LIMITS = { commands: 512, messages: 512 } as const
 function fail(
   message: string,
   code:
@@ -369,6 +372,8 @@ export function actStudio(
   }
   if (input.expectedVersion !== previous.version)
     fail(`Version conflict: current ${previous.version}`, 'CONFLICT')
+  if (Object.keys(previous.requests).length >= STUDIO_RECEIPT_LIMITS.commands)
+    fail('Incident action limit reached. Start a new drill.', 'INVALID_TRANSITION')
   if (!Number.isFinite(Date.parse(now)))
     fail('Invalid server timestamp', 'INVALID_INPUT')
   const s = structuredClone(previous),
@@ -622,6 +627,11 @@ export function postStudioMessage(
       fail('Message ID already used by a different message', 'CONFLICT')
     return { room: previous, replayed: true }
   }
+  if (
+    Math.max(Object.keys(receipts).length, previous.messages.length) >=
+    STUDIO_RECEIPT_LIMITS.messages
+  )
+    fail('Incident chat limit reached. Start a new drill.', 'INVALID_TRANSITION')
   const room = structuredClone(previous)
   room.messageReceipts ??= Object.fromEntries(
     previous.messages.map((m) => [m.id, { actorId: m.actorId, text: m.text }]),
