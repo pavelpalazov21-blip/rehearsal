@@ -43,7 +43,6 @@ export function writeReviewSource(
     const files = [
       'HEAD',
       'info/refs',
-      'refs/heads/main',
       'objects/info/packs',
       ...readdirSync(join(temp, 'objects/pack'))
         .filter((f) => /\.(pack|idx)$/.test(f))
@@ -53,6 +52,10 @@ export function writeReviewSource(
       mkdirSync(dirname(join(cloneDir, file)), { recursive: true })
       cpSync(join(temp, file), join(cloneDir, file))
     }
+    // Git may pack refs after fetch/repack; a public dumb-HTTP snapshot
+    // still needs a readable loose branch ref for anonymous clients.
+    mkdirSync(join(cloneDir, 'refs/heads'), { recursive: true })
+    writeFileSync(join(cloneDir, 'refs/heads/main'), commit + '\n')
     git(
       'archive',
       '--format=zip',
