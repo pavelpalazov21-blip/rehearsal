@@ -32,7 +32,7 @@ node tools/test-built.mjs
 npx deepspace test run all
 ```
 
-The isolated browser suite runs the production build locally under workerd with a temporary signing key, test identity provider, isolated SQLite state and independent browsers. Set ROLLCALL_CHROMIUM to use a system Chromium executable. The official account fixture uses the same Studio acceptance assertions with platform test accounts when the isolated runner is absent. The SDK suite requires owner authentication and three provisioned test identities.
+The isolated browser suite runs the production build locally under workerd with a temporary signing key, test identity provider, isolated SQLite state and independent browsers. Set ROLLCALL_CHROMIUM to use a system Chromium executable. The official account fixture uses the same Studio acceptance assertions with platform test accounts when the isolated runner is absent. The SDK suite requires owner authentication and three provisioned test identities. In proxy-only environments, set REHEARSAL_TEST_PROXY_AUTH=1 and NODE_USE_ENV_PROXY=1 for the authenticated test run. After deployment, REHEARSAL_TEST_LIVE=1 npm run test:browser runs the six Studio cases against the public app with the platform accounts.
 
 The source page at /rehearsal-source/ is generated during the build from the Git commit. Review and commit first so its source matches the release. It includes a static, read-only Git endpoint. Deployment and evidence are tracked in docs/release-review.md.
 
