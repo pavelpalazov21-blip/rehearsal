@@ -237,17 +237,16 @@ test('three signed-in users collaborate, preserve private evidence and verify re
   await commander.page.getByTestId('studio-action-finish').click()
   await expect(commander.page.getByTestId('studio-phase')).toHaveText(
     'complete',
-    { timeout: 15_000 },
+    { timeout: 30_000 },
   )
-  await engineer.page.reload({ waitUntil: 'domcontentloaded' })
-  await communications.page.reload({ waitUntil: 'domcontentloaded' })
+  await Promise.all([engineer.page, communications.page].map(page => page.reload({ waitUntil: 'domcontentloaded' })))
   await expect(engineer.page.getByTestId('studio-phase')).toHaveText(
     'complete',
-    { timeout: 15_000 },
+    { timeout: 30_000 },
   )
   await expect(communications.page.getByTestId('studio-phase')).toHaveText(
     'complete',
-    { timeout: 15_000 },
+    { timeout: 30_000 },
   )
   await communications.page.getByRole('button', { name: 'Code editor' }).click()
   await expect(

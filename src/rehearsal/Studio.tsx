@@ -37,6 +37,7 @@ async function invoke<T>(
   if (!jwt) throw new Error('Sign in before using Rehearsal')
   const response = await fetch(`/api/actions/${method}`, {
     method: 'POST',
+    signal: method === 'studioSnapshot' ? AbortSignal.timeout(12_000) : undefined,
     headers: {
       Authorization: `Bearer ${jwt}`,
       'content-type': 'application/json',
@@ -372,6 +373,7 @@ export default function RehearsalStudioPage() {
     if (!isLoaded || !isSignedIn || room) return
     const remembered = sessionStorage.getItem('rehearsal.studioRoom')
     if (!remembered) return
+    setStatus('Restoring room…')
     let cancelled = false
     let retry: ReturnType<typeof setTimeout>
     async function restore() {

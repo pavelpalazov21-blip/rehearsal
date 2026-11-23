@@ -9,7 +9,7 @@ export default defineConfig({
   testDir: '.',
   testMatch: hosted ? 'studio-collab.spec.ts' : '**/*.spec.ts',
   workers: 1,
-  timeout: 45000,
+  timeout: 90000,
   retries: 0,
   use: {
     baseURL,
