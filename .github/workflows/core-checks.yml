@@ -28,3 +28,7 @@ jobs:
         run: npm run test:unit
       - name: Build production source
         run: npm run build
+      - name: Verify the read-only Git export points to the built revision
+        run: |
+          test -s dist/client/release-source/git/refs/heads/main
+          test "$(cat dist/client/release-source/git/refs/heads/main)" = "$(git rev-parse HEAD)"
