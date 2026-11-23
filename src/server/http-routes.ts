@@ -105,7 +105,7 @@ export function registerAuthAndIntegrationRoutes(app: Hono<AppContext>): void {
     const appOrigin = new URL(c.req.url).origin
     // Land the signed-in user in the app, not on the static landing. `/` is a
     // static page (no auth/realtime providers), so redirecting there after auth
-    // would strand the user; `/home` is the dynamic app boundary.
+    // routes signed-in responders directly to the incident studio.
     const appHome = `${appOrigin}/rehearsal-studio`
 
     if (!code) return c.redirect(appHome)

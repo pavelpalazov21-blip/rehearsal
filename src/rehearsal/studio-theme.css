@@ -17,7 +17,7 @@
   --rh-stroke-strong: #3d4545;
   --rh-white: #f0f2ec;
   --rh-muted: #9aa39e;
-  --rh-faint: #66736d;
+  --rh-faint: #909f96;
   --rh-signal: #b8f36c;
   --rh-signal-fg: #11170b;
   --rh-signal-weak: #1d2d18;
@@ -1887,7 +1887,7 @@
   .rh-app {
     grid-template-columns: 74px minmax(0, 1fr);
   }
-  .rh-rail {
+  .rh-app .rh-rail {
     padding: 21px 10px;
   }
   .rh-rail-brand {
@@ -1970,7 +1970,7 @@
     display: block;
     padding-bottom: 0;
   }
-  .rh-rail {
+  .rh-app .rh-rail {
     display: none;
   }
   .rh-topbar {
