@@ -778,7 +778,7 @@ export default function RehearsalStudioPage() {
           target="_blank"
           rel="noopener noreferrer"
         >
-          <Glyph name="code" /> Read the source &amp; tests{' '}
+          <Glyph name="code" /> View Source{' '}
           <Glyph name="arrow" />
         </a>
         <div className="rh-rail-bottom">
@@ -796,6 +796,7 @@ export default function RehearsalStudioPage() {
             <strong>{room ? 'Incident room' : 'Scenario library'}</strong>
           </div>
           <div className="rh-top-actions">
+            <a className="rh-mobile-source" href="/rehearsal-source/">View Source</a>
             <span className="rh-safe">
               <Glyph name="shield" /> Simulated environment
             </span>

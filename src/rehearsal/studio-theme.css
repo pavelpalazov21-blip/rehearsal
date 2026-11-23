@@ -2244,3 +2244,6 @@
   text-decoration: underline;
   text-underline-offset: 4px;
 }
+
+.rh-mobile-source { display:none; }
+@media (max-width:930px) { .rh-mobile-source { display:inline; color:var(--rh-signal); text-decoration:underline; } }

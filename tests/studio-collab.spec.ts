@@ -352,7 +352,7 @@ test('the entry page and public source work at phone and desktop widths', async 
         () => document.documentElement.scrollWidth <= innerWidth,
       ),
     ).toBe(true)
-    await page.getByRole('link', { name: 'Read the source and tests' }).click()
+    await page.getByRole('link', { name: 'View Source' }).click()
     await expect(
       page.getByRole('heading', { name: 'Source code', exact: true }),
     ).toBeVisible()

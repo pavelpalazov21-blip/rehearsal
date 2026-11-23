@@ -1,3 +1,6 @@
+import { createElement } from 'react'
+import { renderToStaticMarkup } from 'react-dom/server'
+import { ReleasedSource } from '../src/components/ReleasedSource'
 import { execFileSync } from 'node:child_process'
 import {
   cpSync,
@@ -9,14 +12,6 @@ import {
 } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
-
-function html(value: string) {
-  return value
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-}
 
 // Publish only reachable Git objects and transport metadata. Machine config,
 // hooks, credentials and working-directory files are outside this snapshot.
@@ -78,16 +73,21 @@ export function writeReviewSource(
     ['Three-role browser acceptance', 'tests/studio-collab.spec.ts'],
     ['Project overview', 'README.md'],
   ]
-  const listings = files
-    .map(
-      ([label, path]) =>
-        `<details><summary>${html(label)} <span>${html(path)}</span></summary><pre><code>${html(git('show', commit + ':' + path))}</code></pre></details>`,
-    )
-    .join('')
-  const cloneUrl = html(origin) + '/release-source/git'
-  const page = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Rehearsal · Source code</title>
-<style>*{box-sizing:border-box}body{margin:0;background:#0c1010;color:#eef2ec;font:16px/1.5 Inter,Arial,sans-serif}nav{background:#172018;color:#d2f1a5}nav div,main{max-width:930px;margin:auto;padding:17px max(20px,4vw)}nav div{font-size:20px;font-weight:700}main{padding-block:34px 70px}h1{font-size:clamp(2.4rem,7vw,3.8rem);line-height:1.06;letter-spacing:-.065em;margin:14px 0}h2{font-size:1.1rem;margin-top:29px}a{color:#c2ed91;text-underline-offset:3px}p{margin:10px 0;color:#b4c2bb}code{font: .88em/1.5 ui-monospace,monospace}pre{background:#101614;color:#dce7df;padding:12px;border-radius:5px;overflow:auto}details{background:#171f1a;border:1px solid #39483d;border-radius:6px;margin:7px 0;padding:11px 15px;min-width:0}summary{cursor:pointer;font-weight:650;overflow-wrap:anywhere}summary span{color:#adbcaf;font: .78em ui-monospace,monospace;margin-left:8px}.download{display:inline-block;background:#b8f36c;color:#15200f;font-weight:650;text-decoration:none;border-radius:5px;padding:8px 14px;margin:6px 0}</style>
-</head><body><nav><div>Rehearsal</div></nav><main><a href="/">Open Rehearsal</a><h1>Source code</h1><p>Code for revision <code>${html(commit.slice(0, 12))}</code> of Rehearsal.</p><a class="download" href="/release-source/rehearsal.zip" download>Download source ZIP</a><h2>Clone the read-only repository</h2><pre><code>git clone ${cloneUrl} rehearsal</code></pre><h2>Browse the code</h2>${listings}</main></body></html>`
+  const release = {
+    commit,
+    origin,
+    files: files.map(([label, path]) => ({
+      label,
+      path,
+      content: git('show', commit + ':' + path),
+    })),
+  }
+  const markup = renderToStaticMarkup(
+    createElement(ReleasedSource, { release }),
+  )
+  const page = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="/favicon.ico"><title>Rehearsal · Source code</title></head><body>${markup}</body></html>`
+  writeFileSync(join(output, 'listing.json'), JSON.stringify(release))
+  writeFileSync(join(output, 'document.txt'), page)
   mkdirSync(join(clientDir, 'rehearsal-source'), { recursive: true })
   writeFileSync(join(clientDir, 'rehearsal-source/index.html'), page)
   writeFileSync(join(clientDir, 'source.html'), page)

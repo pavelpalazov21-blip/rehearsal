@@ -21,7 +21,7 @@ export default function Landing() {
           <a className="rh-primary" href="/rehearsal-studio">
             Open the incident studio →
           </a>
-          <a href="/rehearsal-source/">Read the source and tests</a>
+          <a href="/rehearsal-source/">View Source</a>
         </div>
         <aside>
           <strong>First drill · Checkout retries</strong>

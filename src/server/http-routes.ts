@@ -434,6 +434,15 @@ export function registerStaticRoutes(app: Hono<AppContext>): void {
     return asset
   })
 
+  for (const path of ['/rehearsal-source', '/rehearsal-source/']) {
+    app.get(path, async (c) => {
+      const asset = await c.env.ASSETS.fetch(new URL('/release-source/document.txt', c.req.url))
+      if (!asset.ok) return c.text('Released source is temporarily unavailable.', 503)
+      return new Response(asset.body, { headers: {
+        'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache',
+      } })
+    })
+  }
   app.get('/rollcall', (c) => c.redirect('/', 308))
   app.get('/rollcall/', (c) => c.redirect('/', 308))
   app.get('*', async (c) => {
