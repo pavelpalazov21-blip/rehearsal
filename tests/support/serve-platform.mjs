@@ -3,16 +3,20 @@ import { spawn, execFileSync } from 'node:child_process'
 import { cpSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { createServer } from 'node:http'
 import { tmpdir } from 'node:os'
-import { join, resolve } from 'node:path'
+import { basename, join, resolve } from 'node:path'
 import { parseEnv } from 'node:util'
 
-execFileSync('npm', ['run', 'build'], { stdio: 'inherit' })
+// Invoke installed JavaScript CLIs directly; Windows .cmd shims cannot be
+// launched reliably by execFileSync/spawn without a shell.
+execFileSync(process.execPath, [resolve('node_modules/vite/bin/vite.js'), 'build'], {
+  stdio: 'inherit',
+})
 const temp = mkdtempSync(join(tmpdir(), 'rehearsal-platform-'))
 const clean = () => rmSync(temp, { recursive: true, force: true })
 process.on('exit', clean)
 cpSync('dist', temp, {
   recursive: true,
-  filter: (p) => !p.split('/').pop().startsWith('.dev.vars'),
+  filter: (p) => !basename(p).startsWith('.dev.vars'),
 })
 const dir = join(temp, 'rollcall_pavel')
 cpSync('.dev.vars', join(dir, '.dev.vars'))
@@ -84,12 +88,17 @@ if (process.env.REHEARSAL_TEST_PROXY_AUTH === '1') {
   await new Promise((resolve) => relay.listen(0, '127.0.0.1', resolve))
   args.push('--var', 'AUTH_WORKER_URL:http://127.0.0.1:' + relay.address().port)
 }
-const child = spawn(resolve('node_modules/.bin/wrangler'), args, {
+const child = spawn(process.execPath, [resolve('node_modules/wrangler/bin/wrangler.js'), ...args], {
   cwd: dir,
   stdio: 'inherit',
 })
 for (const sig of ['SIGINT', 'SIGTERM']) process.on(sig, () => child.kill(sig))
+child.on('error', (error) => {
+  console.error('Unable to start Wrangler:', error)
+  relay?.close()
+  process.exitCode = 1
+})
 child.on('exit', (code) => {
   relay?.close()
-  process.exitCode = code ?? 0
+  process.exitCode = code ?? 1
 })

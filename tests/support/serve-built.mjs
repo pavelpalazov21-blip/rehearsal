@@ -54,8 +54,9 @@ await new Promise((resolve) =>
   provider.listen(Number(process.argv[2]) + 321, '127.0.0.1', resolve),
 )
 const child = spawn(
-  resolve('node_modules/.bin/wrangler'),
+  process.execPath,
   [
+    resolve('node_modules/wrangler/bin/wrangler.js'),
     'dev',
     '--local',
     '--no-bundle',
@@ -73,7 +74,12 @@ const child = spawn(
   { stdio: 'inherit', cwd: dir, env },
 )
 for (const sig of ['SIGINT', 'SIGTERM']) process.on(sig, () => child.kill(sig))
+child.on('error', (error) => {
+  console.error('Unable to start Wrangler:', error)
+  provider.close()
+  process.exitCode = 1
+})
 child.on('exit', (code) => {
   provider.close()
-  process.exitCode = code ?? 0
+  process.exitCode = code ?? 1
 })

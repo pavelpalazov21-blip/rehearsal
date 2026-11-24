@@ -1,7 +1,7 @@
 import { generateKeyPairSync } from 'node:crypto'
 import { mkdtempSync, cpSync, writeFileSync, rmSync, existsSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join, resolve } from 'node:path'
+import { basename, join, resolve } from 'node:path'
 import { spawnSync } from 'node:child_process'
 
 if (!existsSync('dist/rollcall_pavel/wrangler.json'))
@@ -13,7 +13,7 @@ const temp = mkdtempSync(join(tmpdir(), 'rehearsal-browser-'))
 try {
   cpSync('dist', temp, {
     recursive: true,
-    filter: (file) => !file.split('/').at(-1).startsWith('.dev.vars'),
+    filter: (file) => !basename(file).startsWith('.dev.vars'),
   })
   const dir = join(temp, 'rollcall_pavel')
   const issuer = 'https://rehearsal.test.invalid'
@@ -36,8 +36,9 @@ try {
       .join('\n'),
   )
   const run = spawnSync(
-    resolve('node_modules/.bin/playwright'),
+    process.execPath,
     [
+      resolve('node_modules/playwright/cli.js'),
       'test',
       '--config',
       'tests/playwright.config.ts',
@@ -55,6 +56,7 @@ try {
       },
     },
   )
+  if (run.error) throw run.error
   process.exitCode = run.status ?? 1
 } finally {
   rmSync(temp, { recursive: true, force: true })
